@@ -1,6 +1,6 @@
-**Credit Risk Model - Braviant**\
+**Credit Risk Model - Braviant**
 
-EDA
+**EDA**
 
 The dataset includes 25,308 funded
 unsecured installment loans originated between January 2022 and December
@@ -15,7 +15,7 @@ trades, and term are protective. Channel and state variables show
 limited standalone predictive value, reinforcing that traditional bureau
 and affordability metrics are the primary drivers of risk.
 
-Data Split
+**Data Split**
 
 An out-of-time split was used to reflect real deployment. Loans were sorted
 chronologically, with 50% assigned to training, 25% to validation, and
@@ -23,7 +23,7 @@ chronologically, with 50% assigned to training, 25% to validation, and
 18.7% (valid), and 18.1% (test)---indicating minimal time-based drift
 and supporting reliable performance evaluation.
 
-XGBoost Model
+**XGBoost Model**
 
 An XGBoost model was developed to capture nonlinear
 relationships and interactions using only underwriting-available
@@ -39,7 +39,7 @@ bureau score, loan-to-income, utilization, delinquencies, income, and
 inquiries as the primary risk drivers. The model was simplified from 15
 to 11 features with no material loss in PR AUC.
 
-Logistic Regression Model
+**Logistic Regression Model**
 
 A logistic regression baseline was built using
 the same features and preprocessing pipeline, with continuous variables
@@ -48,7 +48,7 @@ The model achieved ROC AUC ≈ 0.76 and PR AUC ≈ 0.40 on validation and
 test. Coefficients align with credit intuition, and performance remained
 stable after reducing to \~11 core features.
 
-Model Comparison and Conclusion
+**Model Comparison and Conclusion**
 
 XGBoost outperforms logistic regression
 across all metrics, delivering a \~5--6% relative lift in ROC AUC and a
