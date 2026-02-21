@@ -1,165 +1,52 @@
-# Credit Risk Model --- Braviant
+Credit Risk Model - Braviant EDA The dataset includes 25,308 funded
+unsecured installment loans originated between January 2022 and December
+2024, with a 12-month default rate of \~18.7%. Data quality is strong,
+with minimal missingness (\~0.7%) and stable origination volume and
+default rates over time. The portfolio resembles a near-prime
+population, with an average bureau score of \~630, median stated income
+of \~\$4,965, and average utilization near 37%. Univariate analysis
+shows APR, inquiries, delinquencies, public records, and utilization are
+positively associated with default, while bureau score, income, open
+trades, and term are protective. Channel and state variables show
+limited standalone predictive value, reinforcing that traditional bureau
+and affordability metrics are the primary drivers of risk. Data Split An
+out-of-time split was used to reflect real deployment. Loans were sorted
+chronologically, with 50% assigned to training, 25% to validation, and
+25% to test. Default rates remain stable across splits---19.0% (train),
+18.7% (valid), and 18.1% (test)---indicating minimal time-based drift
+and supporting reliable performance evaluation.
 
-## Executive Summary
+XGBoost Model An XGBoost model was developed to capture nonlinear
+relationships and interactions using only underwriting-available
+variables. Post-origination fields (e.g., charged_off_amount,
+paid_interest_amount, apr), state, and engineered age were excluded for
+compliance and defendability reasons. Preprocessing was fit on training
+data only and included conservative imputation and engineered features
+such as log income and loan-to-income. Monotone constraints aligned
+model behavior with credit intuition, and class imbalance was handled
+using scale_pos_weight (\~4.26). The final model achieved ROC AUC ≈ 0.80
+and PR AUC ≈ 0.49--0.50 on validation and test. SHAP analysis confirms
+bureau score, loan-to-income, utilization, delinquencies, income, and
+inquiries as the primary risk drivers. The model was simplified from 15
+to 11 features with no material loss in PR AUC.
 
-This project develops and evaluates machine learning models to predict
-12-month default risk for unsecured installment loans. The objective is
-to build a deployable, compliant, and interpretable underwriting model
-using only application-time variables.
+Logistic Regression Model A logistic regression baseline was built using
+the same features and preprocessing pipeline, with continuous variables
+standardized. VIF values (≈1.0--1.8) indicate minimal multicollinearity.
+The model achieved ROC AUC ≈ 0.76 and PR AUC ≈ 0.40 on validation and
+test. Coefficients align with credit intuition, and performance remained
+stable after reducing to \~11 core features.
 
-The dataset includes **25,308 funded unsecured installment loans**
-originated between **January 2022 and December 2024**, with an overall
-**12-month default rate of \~18.7%**. The portfolio represents a
-near-prime borrower population and exhibits strong data quality and
-temporal stability.
-
-------------------------------------------------------------------------
-
-## Dataset Overview
-
--   **Total loans:** 25,308
--   **Default rate:** \~18.7%
--   **Missingness:** \~0.7%
--   **Average bureau score:** \~630
--   **Median stated income:** \~\$4,965
--   **Average utilization:** \~37%
-
-### Key Risk Indicators
-
-**Positively Associated with Default** - APR
-- Credit inquiries
-- Delinquencies
-- Public records
-- Utilization
-
-**Protective Factors** - Bureau score
-- Income
-- Open trades
-- Loan term
-
-Channel and state variables demonstrated limited standalone predictive
-value, reinforcing that traditional bureau and affordability metrics are
-the primary drivers of risk.
-
-------------------------------------------------------------------------
-
-## Data Splitting Strategy
-
-An out-of-time split was used to reflect real-world deployment
-conditions.
-
--   **Training:** 50% (Default rate: 19.0%)
--   **Validation:** 25% (Default rate: 18.7%)
--   **Test:** 25% (Default rate: 18.1%)
-
-Stable default rates across splits indicate minimal temporal drift and
-support reliable model evaluation.
-
-------------------------------------------------------------------------
-
-# Modeling Approach
-
-## 1. XGBoost Model
-
-### Design Principles
-
--   Used only underwriting-available variables
--   Excluded post-origination fields (e.g., `charged_off_amount`,
-    `paid_interest_amount`, `apr`)
--   Excluded state and engineered age for compliance and defendability
--   Preprocessing fit on training data only
--   Conservative imputation
--   Feature engineering: log income, loan-to-income
--   Monotonic constraints aligned with credit intuition
--   Class imbalance handled using `scale_pos_weight ≈ 4.26`
-
-### Performance
-
-  Metric    Validation     Test
-  --------- -------------- --------------
-  ROC AUC   ≈ 0.80         ≈ 0.80
-  PR AUC    ≈ 0.49--0.50   ≈ 0.49--0.50
-
-### Interpretability
-
-SHAP analysis identified the primary drivers of risk:
-
--   Bureau score
--   Loan-to-income
--   Utilization
--   Delinquencies
--   Income
--   Inquiries
-
-The model was simplified from 15 to 11 features with no material
-degradation in PR AUC.
-
-------------------------------------------------------------------------
-
-## 2. Logistic Regression (Baseline)
-
-A logistic regression model was built using the same features and
-preprocessing pipeline, with standardized continuous variables.
-
-### Diagnostics
-
--   VIF range: ≈ 1.0--1.8 (minimal multicollinearity)
-
-### Performance
-
-  Metric    Validation   Test
-  --------- ------------ --------
-  ROC AUC   ≈ 0.76       ≈ 0.76
-  PR AUC    ≈ 0.40       ≈ 0.40
-
-Model coefficients align with established credit risk intuition.
-Performance remained stable after reducing to \~11 core features.
-
-------------------------------------------------------------------------
-
-# Model Comparison
-
-  Metric    XGBoost        Logistic Regression   Relative Lift
-  --------- -------------- --------------------- ---------------
-  ROC AUC   \~0.80         \~0.76                \~5--6%
-  PR AUC    \~0.49--0.50   \~0.40                \~24--26%
-
-The improvement is particularly meaningful given the \~19% default rate,
-reflecting materially better identification of high-risk borrowers.
-Performance gains were consistent between validation and test sets,
-indicating strong generalization.
-
-------------------------------------------------------------------------
-
-# Deployment Recommendation
-
-A balanced, risk-tiered approval framework is recommended:
-
--   **Auto-approve** low-risk borrowers
--   **Risk-based pricing or exposure limits** for mid-risk applicants
--   **Decline** highest-risk segment
-
-This strategy enables either:
-
--   Lower losses at a fixed approval rate
--   **or**
--   Higher approvals at a fixed risk target
-
-------------------------------------------------------------------------
-
-# Governance & Monitoring
-
-Ongoing governance should include:
-
--   Performance stability monitoring
--   Data drift detection
--   Score distribution tracking
--   Fair lending analysis
-
-------------------------------------------------------------------------
-
-## Author
-
-**Aaron England, PhD**\
-Machine Learning Engineer | Credit Risk Modeling | Production ML
-Systems
+Model Comparison and Conclusion XGBoost outperforms logistic regression
+across all metrics, delivering a \~5--6% relative lift in ROC AUC and a
+\~24--26% lift in PR AUC. The improvement is especially meaningful given
+the \~19% default rate, as it reflects materially better identification
+of higher-risk borrowers. These gains are consistent from validation to
+test, suggesting robust generalization. The recommended approach is a
+balanced, risk-tiered approval strategy: auto-approve low-risk
+borrowers, apply risk-based pricing or exposure limits to mid-risk
+applicants, and decline the highest-risk segment. This supports either
+lower losses at a fixed approval rate or higher approvals at the same
+risk target. Ongoing governance should include monitoring for
+performance stability, data drift, score distribution shifts, and fair
+lending considerations.
