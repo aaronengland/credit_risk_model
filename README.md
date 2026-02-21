@@ -1,16 +1,16 @@
-# Credit Risk Model -- Braviant
+# Credit Risk Model --- Braviant
 
 ## Executive Summary
 
 This project develops and evaluates machine learning models to predict
-12‑month default risk for unsecured installment loans. The objective is
+12-month default risk for unsecured installment loans. The objective is
 to build a deployable, compliant, and interpretable underwriting model
-using only application‑time variables.
+using only application-time variables.
 
 The dataset includes **25,308 funded unsecured installment loans**
 originated between **January 2022 and December 2024**, with an overall
-**12‑month default rate of \~18.7%**. The portfolio represents a
-near‑prime borrower population and exhibits strong data quality and
+**12-month default rate of \~18.7%**. The portfolio represents a
+near-prime borrower population and exhibits strong data quality and
 temporal stability.
 
 ------------------------------------------------------------------------
@@ -45,7 +45,7 @@ the primary drivers of risk.
 
 ## Data Splitting Strategy
 
-An out‑of‑time split was used to reflect real‑world deployment
+An out-of-time split was used to reflect real-world deployment
 conditions.
 
 -   **Training:** 50% (Default rate: 19.0%)\
@@ -63,13 +63,13 @@ support reliable model evaluation.
 
 ### Design Principles
 
--   Used only underwriting‑available variables\
--   Excluded post‑origination fields (e.g., charged_off_amount,
-    paid_interest_amount, APR)\
+-   Used only underwriting-available variables\
+-   Excluded post-origination fields (e.g., `charged_off_amount`,
+    `paid_interest_amount`, `apr`)\
 -   Excluded state and engineered age for compliance and defendability\
 -   Preprocessing fit on training data only\
 -   Conservative imputation\
--   Feature engineering: log income, loan‑to‑income\
+-   Feature engineering: log income, loan-to-income\
 -   Monotonic constraints aligned with credit intuition\
 -   Class imbalance handled using `scale_pos_weight ≈ 4.26`
 
@@ -85,7 +85,7 @@ support reliable model evaluation.
 SHAP analysis identified the primary drivers of risk:
 
 -   Bureau score\
--   Loan‑to‑income\
+-   Loan-to-income\
 -   Utilization\
 -   Delinquencies\
 -   Income\
@@ -125,8 +125,7 @@ Performance remained stable after reducing to \~11 core features.
   PR AUC    \~0.49--0.50   \~0.40                \~24--26%
 
 The improvement is particularly meaningful given the \~19% default rate,
-reflecting materially better identification of high‑risk borrowers.
-
+reflecting materially better identification of high-risk borrowers.
 Performance gains were consistent between validation and test sets,
 indicating strong generalization.
 
@@ -134,16 +133,16 @@ indicating strong generalization.
 
 # Deployment Recommendation
 
-A balanced, risk‑tiered approval framework is recommended:
+A balanced, risk-tiered approval framework is recommended:
 
--   **Auto‑approve** low‑risk borrowers\
--   **Risk‑based pricing or exposure limits** for mid‑risk applicants\
--   **Decline** highest‑risk segment
+-   **Auto-approve** low-risk borrowers\
+-   **Risk-based pricing or exposure limits** for mid-risk applicants\
+-   **Decline** highest-risk segment
 
 This strategy enables either:
 
 -   Lower losses at a fixed approval rate\
-    **or**
+-   **or**
 -   Higher approvals at a fixed risk target
 
 ------------------------------------------------------------------------
@@ -161,6 +160,6 @@ Ongoing governance should include:
 
 ## Author
 
-Aaron England, PhD\
+**Aaron England, PhD**\
 Machine Learning Engineer \| Credit Risk Modeling \| Production ML
 Systems
