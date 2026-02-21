@@ -25,6 +25,8 @@ chronologically, with 50% assigned to training, 25% to validation, and
 18.7% (valid), and 18.1% (test)---indicating minimal time-based drift
 and supporting reliable performance evaluation.
 
+![Data Split](img/2.png)
+
 **[XGBoost Model](https://github.com/aaronengland/credit_risk_model_braviant/blob/main/03_xgboost/notebook.ipynb)**
 
 An XGBoost model was developed to capture nonlinear
@@ -41,6 +43,8 @@ bureau score, loan-to-income, utilization, delinquencies, income, and
 inquiries as the primary risk drivers. The model was simplified from 15
 to 11 features with no material loss in PR AUC.
 
+![XGBoost](img/3.png)
+
 **[Logistic Regression Model](https://github.com/aaronengland/credit_risk_model_braviant/blob/main/04_logistic_regression/notebook.ipynb)**
 
 A logistic regression baseline was built using
@@ -49,6 +53,8 @@ standardized. VIF values (≈1.0--1.8) indicate minimal multicollinearity.
 The model achieved ROC AUC ≈ 0.76 and PR AUC ≈ 0.40 on validation and
 test. Coefficients align with credit intuition, and performance remained
 stable after reducing to \~11 core features.
+
+![Logistic](img/4.png)
 
 **[Model Comparison and Conclusion](https://github.com/aaronengland/credit_risk_model_braviant/blob/main/05_comparison/notebook.ipynb)**
 
@@ -65,3 +71,5 @@ lower losses at a fixed approval rate or higher approvals at the same
 risk target. Ongoing governance should include monitoring for
 performance stability, data drift, score distribution shifts, and fair
 lending considerations.
+
+![Comparison](img/5.png)
