@@ -17,11 +17,11 @@ temporal stability.
 
 ## Dataset Overview
 
--   **Total loans:** 25,308\
--   **Default rate:** \~18.7%\
--   **Missingness:** \~0.7%\
--   **Average bureau score:** \~630\
--   **Median stated income:** \~\$4,965\
+-   **Total loans:** 25,308
+-   **Default rate:** \~18.7%
+-   **Missingness:** \~0.7%
+-   **Average bureau score:** \~630
+-   **Median stated income:** \~\$4,965
 -   **Average utilization:** \~37%
 
 ### Key Risk Indicators
