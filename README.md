@@ -15,6 +15,8 @@ trades, and term are protective. Channel and state variables show
 limited standalone predictive value, reinforcing that traditional bureau
 and affordability metrics are the primary drivers of risk.
 
+![EDA](img/1.png)
+
 **[Data Split](https://github.com/aaronengland/credit_risk_model_braviant/blob/main/02_split_data/notebook.ipynb)**
 
 An out-of-time split was used to reflect real deployment. Loans were sorted
