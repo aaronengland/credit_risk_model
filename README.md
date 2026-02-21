@@ -160,6 +160,6 @@ Ongoing governance should include:
 
 ## Author
 
-**Aaron England, PhD**
+**Aaron England, PhD**\
 Machine Learning Engineer | Credit Risk Modeling | Production ML
 Systems
