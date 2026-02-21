@@ -26,15 +26,15 @@ temporal stability.
 
 ### Key Risk Indicators
 
-**Positively Associated with Default** - APR\
-- Credit inquiries\
-- Delinquencies\
-- Public records\
+**Positively Associated with Default** - APR
+- Credit inquiries
+- Delinquencies
+- Public records
 - Utilization
 
-**Protective Factors** - Bureau score\
-- Income\
-- Open trades\
+**Protective Factors** - Bureau score
+- Income
+- Open trades
 - Loan term
 
 Channel and state variables demonstrated limited standalone predictive
@@ -48,8 +48,8 @@ the primary drivers of risk.
 An out-of-time split was used to reflect real-world deployment
 conditions.
 
--   **Training:** 50% (Default rate: 19.0%)\
--   **Validation:** 25% (Default rate: 18.7%)\
+-   **Training:** 50% (Default rate: 19.0%)
+-   **Validation:** 25% (Default rate: 18.7%)
 -   **Test:** 25% (Default rate: 18.1%)
 
 Stable default rates across splits indicate minimal temporal drift and
@@ -63,14 +63,14 @@ support reliable model evaluation.
 
 ### Design Principles
 
--   Used only underwriting-available variables\
+-   Used only underwriting-available variables
 -   Excluded post-origination fields (e.g., `charged_off_amount`,
-    `paid_interest_amount`, `apr`)\
--   Excluded state and engineered age for compliance and defendability\
--   Preprocessing fit on training data only\
--   Conservative imputation\
--   Feature engineering: log income, loan-to-income\
--   Monotonic constraints aligned with credit intuition\
+    `paid_interest_amount`, `apr`)
+-   Excluded state and engineered age for compliance and defendability
+-   Preprocessing fit on training data only
+-   Conservative imputation
+-   Feature engineering: log income, loan-to-income
+-   Monotonic constraints aligned with credit intuition
 -   Class imbalance handled using `scale_pos_weight ≈ 4.26`
 
 ### Performance
@@ -84,11 +84,11 @@ support reliable model evaluation.
 
 SHAP analysis identified the primary drivers of risk:
 
--   Bureau score\
--   Loan-to-income\
--   Utilization\
--   Delinquencies\
--   Income\
+-   Bureau score
+-   Loan-to-income
+-   Utilization
+-   Delinquencies
+-   Income
 -   Inquiries
 
 The model was simplified from 15 to 11 features with no material
@@ -135,13 +135,13 @@ indicating strong generalization.
 
 A balanced, risk-tiered approval framework is recommended:
 
--   **Auto-approve** low-risk borrowers\
--   **Risk-based pricing or exposure limits** for mid-risk applicants\
+-   **Auto-approve** low-risk borrowers
+-   **Risk-based pricing or exposure limits** for mid-risk applicants
 -   **Decline** highest-risk segment
 
 This strategy enables either:
 
--   Lower losses at a fixed approval rate\
+-   Lower losses at a fixed approval rate
 -   **or**
 -   Higher approvals at a fixed risk target
 
@@ -151,15 +151,15 @@ This strategy enables either:
 
 Ongoing governance should include:
 
--   Performance stability monitoring\
--   Data drift detection\
--   Score distribution tracking\
+-   Performance stability monitoring
+-   Data drift detection
+-   Score distribution tracking
 -   Fair lending analysis
 
 ------------------------------------------------------------------------
 
 ## Author
 
-**Aaron England, PhD**\
-Machine Learning Engineer \| Credit Risk Modeling \| Production ML
+**Aaron England, PhD**
+Machine Learning Engineer | Credit Risk Modeling | Production ML
 Systems
