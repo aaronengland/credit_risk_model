@@ -142,10 +142,10 @@ All preprocessing is **fit on training data only** and serialized via `joblib` f
 
 The XGBoost model captures nonlinear relationships and feature interactions:
 
-- **Hyperparameter tuning**: Grid search over `learning_rate`, `min_child_weight`, `gamma`, and `max_depth` (36 configurations)
+- **Hyperparameter tuning**: Bayesian optimization via Optuna (50 trials per feature set), searching over learning rate, max depth, min child weight, gamma, subsample, colsample, L1/L2 regularization
 - **Class imbalance**: Handled via `scale_pos_weight` (~4.26)
 - **Monotone constraints**: Enforced to align model behavior with credit intuition
-- **Feature reduction**: SHAP-based reverse stepwise removal from 15 to 11 features with no material PR AUC loss
+- **Dynamic feature elimination**: After each Optuna tuning round, the feature with the lowest XGBoost gain importance is removed and the model is re-tuned from scratch, continuing until 2 features remain
 - **Isotonic calibration**: Applied on validation set for well-calibrated probabilities
 - **Interpretability**: SHAP beeswarm plots confirm bureau score, loan-to-income, utilization, delinquencies, income, and inquiries as primary drivers
 - **Fairness**: Disparate impact analysis by age group
@@ -234,7 +234,8 @@ A logistic regression model serves as an interpretable baseline:
 | SHAP for feature selection | Model-specific importance; more reliable than permutation for correlated features |
 | Isotonic calibration on validation set | Produces well-calibrated probabilities without test set leakage |
 | Serialized preprocessing pipeline | Guarantees identical transformations at inference time |
-| Learning rate in grid search | Lower learning rates (0.01) with early stopping can find more generalizable models |
+| Optuna Bayesian optimization | More efficient than grid search; explores a richer hyperparameter space with fewer evaluations |
+| Gain-based dynamic feature elimination | Features removed based on what the model actually learned each round, not a pre-computed static ordering |
 
 ---
 
