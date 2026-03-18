@@ -1,6 +1,6 @@
 # Credit Risk Model
 
-A production-grade credit risk modeling pipeline that predicts 12-month loan default probability for unsecured installment loans. The project compares XGBoost and Logistic Regression approaches, implements compliance-aware feature engineering, and includes fairness analysis.
+A production-grade credit risk modeling pipeline that predicts 12-month loan default probability for unsecured installment loans. The project compares XGBoost and Logistic Regression approaches, implements compliance-aware feature engineering, isotonic calibration, and includes fairness analysis.
 
 ---
 
@@ -29,9 +29,11 @@ This project builds and evaluates two credit risk models for predicting whether 
 - **Out-of-time validation** to simulate real deployment conditions
 - **Preprocessing pipeline serialization** for reproducible inference
 - **Monotone constraints** to enforce credit risk intuition
-- **SHAP-based interpretability** for model transparency
+- **SHAP-based interpretability** with beeswarm plots for model transparency
+- **Isotonic calibration** for well-calibrated predicted probabilities
 - **Disparate impact analysis** for fair lending compliance
 - **Reverse stepwise feature selection** to minimize model complexity
+- **ROC, Precision-Recall, and calibration curves** for comprehensive evaluation
 
 ---
 
@@ -40,24 +42,21 @@ This project builds and evaluates two credit risk models for predicting whether 
 ```
 credit_risk_model/
 ├── 01_eda/                        # Exploratory data analysis
-│   └── notebook.ipynb
+│   ├── notebook.ipynb
+│   └── output/                    # EDA visualizations
 ├── 02_split_data/                 # Out-of-time train/valid/test split
-│   └── notebook.ipynb
+│   ├── notebook.ipynb
+│   └── output/                    # Split summary charts
 ├── 03_xgboost/                    # XGBoost model development
 │   ├── notebook.ipynb
-│   └── output/
-│       ├── cls_model_inference.joblib
-│       ├── cls_model_preprocessing.joblib
-│       └── df_tuning.csv
+│   └── output/                    # Models, tuning results, plots
 ├── 04_logistic_regression/        # Logistic regression baseline
 │   ├── notebook.ipynb
-│   └── output/
-│       ├── cls_model_inference.joblib
-│       ├── cls_model_preprocessing.joblib
-│       └── df_tuning.csv
+│   └── output/                    # Models, tuning results, plots
 ├── 05_comparison/                 # Head-to-head model comparison
-│   └── notebook.ipynb
-├── img/                           # Visualizations for README
+│   ├── notebook.ipynb
+│   └── output/                    # Comparison visualizations
+├── img/                           # Legacy images
 ├── requirements.txt
 └── README.md
 ```
@@ -84,11 +83,29 @@ Univariate analysis reveals the primary risk drivers in this near-prime portfoli
 
 - **Positively associated with default**: APR, inquiries, delinquencies, public records, utilization
 - **Protective (negatively associated)**: Bureau score, income, open trades, term length
-- **Minimal predictive value**: Channel and state variables (reinforcing that traditional bureau and affordability metrics drive risk)
+- **Minimal predictive value**: Channel and state variables
 
-Default rates and origination volume remain stable over the observation window, confirming no major regime changes.
+All visualizations are generated as consolidated grid layouts and saved to `01_eda/output/`.
 
-![EDA](img/1.png)
+**Signed Correlation with Target**
+
+![Correlation](01_eda/output/correlation_with_target.png)
+
+**Feature Correlation Heatmap**
+
+![Heatmap](01_eda/output/correlation_heatmap.png)
+
+**Feature Distributions (Violin Plots)**
+
+![Violins](01_eda/output/violin_plots.png)
+
+**Lift Plots: Continuous Features**
+
+![Lift Continuous](01_eda/output/lift_plots_continuous.png)
+
+**Lift Plots: Discrete and Binary Features**
+
+![Lift Discrete](01_eda/output/lift_plots_discrete.png)
 
 ### 2. Data Splitting
 
@@ -102,7 +119,7 @@ An **out-of-time split** was used to reflect real deployment conditions. Loans w
 
 Stable default rates across splits confirm minimal time-based drift.
 
-![Data Split](img/2.png)
+![Data Split](02_split_data/output/split_summary.png)
 
 ### 3. Preprocessing Pipeline
 
@@ -125,13 +142,21 @@ All preprocessing is **fit on training data only** and serialized via `joblib` f
 
 The XGBoost model captures nonlinear relationships and feature interactions:
 
-- **Hyperparameter tuning**: Grid search over `min_child_weight`, `gamma`, and `max_depth`
+- **Hyperparameter tuning**: Grid search over `learning_rate`, `min_child_weight`, `gamma`, and `max_depth` (36 configurations)
 - **Class imbalance**: Handled via `scale_pos_weight` (~4.26)
-- **Monotone constraints**: Enforced to align model behavior with credit intuition (e.g., higher bureau score must reduce predicted risk)
+- **Monotone constraints**: Enforced to align model behavior with credit intuition
 - **Feature reduction**: SHAP-based reverse stepwise removal from 15 to 11 features with no material PR AUC loss
-- **Interpretability**: SHAP analysis confirms bureau score, loan-to-income, utilization, delinquencies, income, and inquiries as primary drivers
+- **Isotonic calibration**: Applied on validation set for well-calibrated probabilities
+- **Interpretability**: SHAP beeswarm plots confirm bureau score, loan-to-income, utilization, delinquencies, income, and inquiries as primary drivers
+- **Fairness**: Disparate impact analysis by age group
 
-![XGBoost](img/3.png)
+**SHAP Feature Importance**
+
+![SHAP](03_xgboost/output/shap_final.png)
+
+**ROC, Precision-Recall, and Calibration Curves**
+
+![XGBoost Eval](03_xgboost/output/roc_pr_calibration.png)
 
 ### 5. Logistic Regression Baseline
 
@@ -140,10 +165,17 @@ A logistic regression model serves as an interpretable baseline:
 - **Multicollinearity check**: VIF values 1.0--1.8 (minimal collinearity)
 - **Standardized features**: Z-score scaling for comparable coefficient magnitudes
 - **Feature reduction**: Coefficient-based reverse stepwise removal to ~11 core features
+- **Isotonic calibration**: Applied on validation set
 - **Coefficient alignment**: All signs consistent with credit risk intuition
-- **Disparate impact analysis**: Score distributions compared across age groups (<60 vs. >=60) to assess fair lending risk
+- **Disparate impact analysis**: Score distributions compared across age groups
 
-![Logistic Regression](img/4.png)
+**Signed Coefficients (Final Model)**
+
+![Coefficients](04_logistic_regression/output/coefficients_final.png)
+
+**ROC, Precision-Recall, and Calibration Curves**
+
+![LR Eval](04_logistic_regression/output/roc_pr_calibration.png)
 
 ### 6. Model Comparison
 
@@ -154,9 +186,13 @@ A logistic regression model serves as an interpretable baseline:
 | PR AUC (Valid) | 0.493 | 0.397 | +24.1% |
 | PR AUC (Test) | 0.496 | 0.395 | +25.6% |
 
-XGBoost outperforms across all metrics. The PR AUC improvement is especially meaningful given the ~19% default rate, reflecting materially better identification of higher-risk borrowers.
+**Metrics Comparison**
 
-![Comparison](img/5.png)
+![Metrics](05_comparison/output/metrics_comparison.png)
+
+**ROC, PR, and Calibration Curves (Head-to-Head)**
+
+![Comparison Curves](05_comparison/output/model_comparison_curves.png)
 
 ---
 
@@ -168,6 +204,7 @@ XGBoost outperforms across all metrics. The PR AUC improvement is especially mea
 - **24--26% relative PR AUC lift**, meaning substantially better precision-recall tradeoff for identifying defaults
 - **Consistent generalization** from validation to test, suggesting robust out-of-sample performance
 - **11 final features** -- parsimonious yet powerful
+- **Isotonic calibration** ensures predicted probabilities are well-calibrated for downstream decisioning
 
 ### Recommended Deployment Strategy
 
@@ -195,7 +232,9 @@ XGBoost outperforms across all metrics. The PR AUC improvement is especially mea
 | Monotone constraints (XGBoost) | Ensures model respects known credit risk relationships |
 | Excluded age, state, post-origination vars | Compliance, defendability, and data leakage prevention |
 | SHAP for feature selection | Model-specific importance; more reliable than permutation for correlated features |
+| Isotonic calibration on validation set | Produces well-calibrated probabilities without test set leakage |
 | Serialized preprocessing pipeline | Guarantees identical transformations at inference time |
+| Learning rate in grid search | Lower learning rates (0.01) with early stopping can find more generalizable models |
 
 ---
 
@@ -217,11 +256,11 @@ pip install -r requirements.txt
 Execute the notebooks in order:
 
 ```
-01_eda/notebook.ipynb              # Explore the data
-02_split_data/notebook.ipynb       # Create train/valid/test splits
-03_xgboost/notebook.ipynb          # Train and tune XGBoost model
+01_eda/notebook.ipynb                  # Explore the data
+02_split_data/notebook.ipynb           # Create train/valid/test splits
+03_xgboost/notebook.ipynb              # Train and tune XGBoost model
 04_logistic_regression/notebook.ipynb  # Train logistic regression baseline
-05_comparison/notebook.ipynb       # Compare model performance
+05_comparison/notebook.ipynb           # Compare model performance
 ```
 
-Each notebook is self-contained with its own preprocessing, modeling, and evaluation logic. Serialized model artifacts are saved to each notebook's `output/` directory.
+Each notebook is self-contained with its own preprocessing, modeling, and evaluation logic. All plots are saved to each notebook's `output/` directory. Serialized model artifacts (preprocessing pipeline, inference model, calibrated model) are also saved there for production use.
