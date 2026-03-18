@@ -161,6 +161,10 @@ The XGBoost model captures nonlinear relationships and feature interactions:
 
 ![XGBoost Eval](03_xgboost/output/roc_pr_calibration.png)
 
+**Partial Dependence Plots**
+
+![PDP](03_xgboost/output/partial_dependence_plots.png)
+
 ### 5. Logistic Regression Baseline
 
 A logistic regression model serves as an interpretable baseline:
