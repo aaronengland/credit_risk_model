@@ -142,13 +142,16 @@ All preprocessing is **fit on training data only** and serialized via `joblib` f
 
 The XGBoost model captures nonlinear relationships and feature interactions:
 
-- **Hyperparameter tuning**: Bayesian optimization via Optuna (50 trials per feature set), searching over learning rate, max depth, min child weight, gamma, subsample, colsample, L1/L2 regularization
-- **Class imbalance**: Handled via `scale_pos_weight` (~4.26)
+- **Hyperparameter tuning**: Bayesian optimization via Optuna, searching over learning rate, max depth, min child weight, gamma, subsample, colsample, L1/L2 regularization, and class weighting (on/off)
 - **Monotone constraints**: Enforced to align model behavior with credit intuition
-- **Dynamic feature elimination**: After each Optuna tuning round, the feature with the lowest XGBoost gain importance is removed and the model is re-tuned from scratch, continuing until 2 features remain
-- **Isotonic calibration**: Applied on validation set for well-calibrated probabilities
+- **Dynamic feature elimination**: After each Optuna tuning round, the feature with the lowest XGBoost gain importance is removed and the model is re-tuned from scratch. Early stopping halts elimination when validation PR AUC stops improving for 2 consecutive rounds
+- **Conditional calibration**: Isotonic calibration is evaluated on validation set and only applied if it improves PR AUC
 - **Interpretability**: SHAP beeswarm plots confirm bureau score, loan-to-income, utilization, delinquencies, income, and inquiries as primary drivers
 - **Fairness**: Disparate impact analysis by age group
+
+**Feature Elimination Path**
+
+![RFE](03_xgboost/output/rfe_path.png)
 
 **SHAP Feature Importance**
 
@@ -162,12 +165,17 @@ The XGBoost model captures nonlinear relationships and feature interactions:
 
 A logistic regression model serves as an interpretable baseline:
 
+- **Hyperparameter tuning**: Bayesian optimization via Optuna over regularization strength (C) and class weighting
 - **Multicollinearity check**: VIF values 1.0--1.8 (minimal collinearity)
 - **Standardized features**: Z-score scaling for comparable coefficient magnitudes
-- **Feature reduction**: Coefficient-based reverse stepwise removal to ~11 core features
-- **Isotonic calibration**: Applied on validation set
+- **Dynamic feature elimination**: After each Optuna tuning round, the feature with the lowest absolute coefficient is removed and re-tuned. Early stopping halts when validation PR AUC stops improving for 2 consecutive rounds
+- **Conditional calibration**: Only applied if it improves validation PR AUC
 - **Coefficient alignment**: All signs consistent with credit risk intuition
 - **Disparate impact analysis**: Score distributions compared across age groups
+
+**Feature Elimination Path**
+
+![RFE](04_logistic_regression/output/rfe_path.png)
 
 **Signed Coefficients (Final Model)**
 
@@ -181,10 +189,10 @@ A logistic regression model serves as an interpretable baseline:
 
 | Metric | XGBoost | Logistic Regression | Relative Lift |
 |---|---|---|---|
-| ROC AUC (Valid) | 0.800 | 0.760 | +5.3% |
-| ROC AUC (Test) | 0.800 | 0.758 | +5.5% |
-| PR AUC (Valid) | 0.493 | 0.397 | +24.1% |
-| PR AUC (Test) | 0.496 | 0.395 | +25.6% |
+| ROC AUC (Valid) | 0.801 | 0.760 | +5.4% |
+| ROC AUC (Test) | 0.800 | 0.758 | +5.6% |
+| PR AUC (Valid) | 0.497 | 0.397 | +25.1% |
+| PR AUC (Test) | 0.497 | 0.395 | +25.9% |
 
 **Metrics Comparison**
 
@@ -232,7 +240,9 @@ A logistic regression model serves as an interpretable baseline:
 | Monotone constraints (XGBoost) | Ensures model respects known credit risk relationships |
 | Excluded age, state, post-origination vars | Compliance, defendability, and data leakage prevention |
 | SHAP for feature selection | Model-specific importance; more reliable than permutation for correlated features |
-| Isotonic calibration on validation set | Produces well-calibrated probabilities without test set leakage |
+| Conditional isotonic calibration | Only applied when it improves validation PR AUC; avoids overfitting calibration on small validation sets |
+| Class weighting as tunable parameter | Instead of hardcoding scale_pos_weight, Optuna decides whether class weighting helps for each feature set |
+| Early stopping on feature elimination | Stops removing features when validation score degrades for 2 consecutive rounds |
 | Serialized preprocessing pipeline | Guarantees identical transformations at inference time |
 | Optuna Bayesian optimization | More efficient than grid search; explores a richer hyperparameter space with fewer evaluations |
 | Gain-based dynamic feature elimination | Features removed based on what the model actually learned each round, not a pre-computed static ordering |
